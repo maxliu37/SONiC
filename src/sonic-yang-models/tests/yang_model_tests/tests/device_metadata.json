@@ -156,5 +156,12 @@
     "DEVICE_METADATA_INVALID_CREATE_ONLY_CONFIG_DB_BUFFERS": {
         "desc": "Verifying invalid create_only_config_db_buffers value",
         "eStrKey": "InvalidValue"
+    },
+    "DEVICE_METADATA_VALID_SYSREADY": {
+        "desc": "Verifying valid system-ready state"
+    },
+    "DEVICE_METADATA_INVALID_SYSREADY": {
+        "desc": "Verifying invalid system-ready state",
+        "eStrKey": "InvalidValue"
     }
 }
