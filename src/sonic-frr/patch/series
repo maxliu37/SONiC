@@ -23,3 +23,4 @@ cross-compile-changes.patch
 0021-zebra-remove-duplicated-nexthops-when-sending-fpm-msg.patch
 0022-bgpd-Don-t-read-the-first-byte-of-ORF-header-if-we-a.patch
 0023-bgpd-Make-sure-we-have-enough-data-to-read-two-bytes.patch
+0015-Fix-zebra-crash-when-rebooting.patch
