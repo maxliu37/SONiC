@@ -372,12 +372,17 @@ module sonic-types {
         description
             "Path Tracing Timestamp Template. The Timestamp Template
             defines how to truncate the timestamp
-            (i.e., which bits of the timestamp are selected)";
+            (i.e., which bits of the timestamp are selected).
+
+            template1 = Select bits 08-15 from the timestamp
+            template2 = Select bits 12-19 from the timestamp
+            template3 = Select bits 16-23 from the timestamp
+            template4 = Select bits 20-27 from the timestamp";
         type enumeration {
-            enum template1;  /* Select bits 08-15 from the timestamp */
-            enum template2;  /* Select bits 12-19 from the timestamp */
-            enum template3;  /* Select bits 16-23 from the timestamp */
-            enum template4;  /* Select bits 20-27 from the timestamp */
+            enum template1;
+            enum template2;
+            enum template3;
+            enum template4;
         }
     }
 }
