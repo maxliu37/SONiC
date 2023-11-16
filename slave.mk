@@ -157,6 +157,10 @@ ifeq ($(SONIC_INCLUDE_SYSTEM_TELEMETRY),y)
 INCLUDE_SYSTEM_TELEMETRY = y
 endif
 
+ifeq ($(SONIC_INCLUDE_SYSTEM_GNMI),y)
+INCLUDE_SYSTEM_GNMI = y
+endif
+
 ifeq ($(SONIC_INCLUDE_RESTAPI),y)
 INCLUDE_RESTAPI = y
 endif
@@ -414,6 +418,7 @@ $(info "VS_PREPARE_MEM"                  : "$(VS_PREPARE_MEM)")
 $(info "INCLUDE_MGMT_FRAMEWORK"          : "$(INCLUDE_MGMT_FRAMEWORK)")
 $(info "INCLUDE_ICCPD"                   : "$(INCLUDE_ICCPD)")
 $(info "INCLUDE_SYSTEM_TELEMETRY"        : "$(INCLUDE_SYSTEM_TELEMETRY)")
+$(info "INCLUDE_SYSTEM_GNMI"             : "$(INCLUDE_SYSTEM_GNMI)")
 $(info "ENABLE_HOST_SERVICE_ON_START"    : "$(ENABLE_HOST_SERVICE_ON_START)")
 $(info "INCLUDE_RESTAPI"                 : "$(INCLUDE_RESTAPI)")
 $(info "INCLUDE_SFLOW"                   : "$(INCLUDE_SFLOW)")
@@ -443,6 +448,7 @@ $(info "BUILD_MULTIASIC_KVM"             : "$(BUILD_MULTIASIC_KVM)")
 endif
 $(info "CROSS_BUILD_ENVIRON"             : "$(CROSS_BUILD_ENVIRON)")
 $(info "GZ_COMPRESS_PROGRAM"             : "$(GZ_COMPRESS_PROGRAM)")
+$(info "LEGACY_SONIC_MGMT_DOCKER"        : "$(LEGACY_SONIC_MGMT_DOCKER)")
 $(info )
 else
 $(info SONiC Build System for $(CONFIGURED_PLATFORM):$(CONFIGURED_ARCH))
@@ -793,7 +799,7 @@ SONIC_TARGET_LIST += $(addprefix $(DEBS_PATH)/, $(SONIC_DPKG_DEBS))
 # we depend on it and move our deb to other targets
 # Add new dev package:
 #     $(eval $(call add_derived_package,$(ORIGINAL_DEB),derived_deb_file.deb))
-$(addprefix $(DEBS_PATH)/, $(SONIC_DERIVED_DEBS)) : $(DEBS_PATH)/% : .platform $$(addsuffix -install,$$(addprefix $(DEBS_PATH)/,$$($$*_DEPENDS)))
+$(addprefix $(DEBS_PATH)/, $(SONIC_DERIVED_DEBS)) : $(DEBS_PATH)/% : .platform $$(addprefix $(DEBS_PATH)/,$$($$*_DEPENDS))
 	$(HEADER)
 	# All noise takes place in main deb recipe, so we are just telling that
 	# we depend on it
@@ -1247,7 +1253,7 @@ $(addprefix $(TARGET_PATH)/, $(SONIC_RFS_TARGETS)) : $(TARGET_PATH)/% : \
         $(call dpkg_depend,$(TARGET_PATH)/%.dep)
 	$(HEADER)
 
-	$(call LOAD_CACHE,$*,$@)
+	# $(call LOAD_CACHE,$*,$@)
 
 	# Skip building the target if it is already loaded from cache
 	if [ -z '$($*_CACHE_LOADED)' ] ; then
@@ -1375,6 +1381,7 @@ $(addprefix $(TARGET_PATH)/, $(SONIC_INSTALLERS)) : $(TARGET_PATH)/% : \
 	export sonic_su_mode="$(SECURE_UPGRADE_MODE)"
 	export sonic_su_prod_signing_tool="/sonic/scripts/$(shell basename -- $(SECURE_UPGRADE_PROD_SIGNING_TOOL))"
 	export include_system_telemetry="$(INCLUDE_SYSTEM_TELEMETRY)"
+	export include_system_gnmi="$(INCLUDE_SYSTEM_GNMI)"
 	export include_restapi="$(INCLUDE_RESTAPI)"
 	export include_nat="$(INCLUDE_NAT)"
 	export include_p4rt="$(INCLUDE_P4RT)"
@@ -1536,6 +1543,7 @@ $(addprefix $(TARGET_PATH)/, $(SONIC_INSTALLERS)) : $(TARGET_PATH)/% : \
 		SONIC_VERSION_CACHE=$(SONIC_VERSION_CACHE) \
 		MULTIARCH_QEMU_ENVIRON=$(MULTIARCH_QEMU_ENVIRON) \
 		CROSS_BUILD_ENVIRON=$(CROSS_BUILD_ENVIRON) \
+		BUILD_REDUCE_IMAGE_SIZE=$(BUILD_REDUCE_IMAGE_SIZE) \
 		MASTER_KUBERNETES_VERSION=$(MASTER_KUBERNETES_VERSION) \
 		MASTER_KUBERNETES_CONTAINER_IMAGE_VERSION=$(MASTER_KUBERNETES_CONTAINER_IMAGE_VERSION) \
 		MASTER_PAUSE_VERSION=$(MASTER_PAUSE_VERSION) \

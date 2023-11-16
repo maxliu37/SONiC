@@ -2382,7 +2382,7 @@
                  ],
                  "BIND_POINTS": [
                      "PORT",
-                     "LAG"
+                     "PORTCHANNEL"
                  ]
              }
         },
