@@ -16,6 +16,7 @@ from natsort import natsorted, ns as natsortns
 
 from portconfig import get_port_config, get_fabric_port_config, get_fabric_monitor_config
 from sonic_py_common.interface import backplane_prefix
+from sonic_py_common.multi_asic import is_multi_asic
 
 # TODO: Remove this once we no longer support Python 2
 if sys.version_info.major == 3:
@@ -685,6 +686,17 @@ def parse_dpg(dpg, hname):
             vlanmac = vintf.find(str(QName(ns, "MacAddress")))
             if vlanmac is not None and vlanmac.text is not None:
                 vlan_attributes['mac'] = vlanmac.text
+
+            vintf_node = vintf.find(str(QName(ns, "SecondarySubnets")))
+            if vintf_node is not None and vintf_node.text is not None:
+                subnets = vintf_node.text.split(';')
+                for subnet in subnets:
+                    if sys.version_info >= (3, 0):
+                        network_def = ipaddress.ip_network(subnet, strict=False)
+                    else:
+                        network_def = ipaddress.ip_network(unicode(subnet), strict=False)
+                    prefix = str(network_def[1]) + "/" + str(network_def.prefixlen)
+                    intfs[(vintfname, prefix)]["secondary"] = "true"
 
             sonic_vlan_name = "Vlan%s" % vlanid
             if sonic_vlan_name != vintfname:
@@ -1719,6 +1731,21 @@ def parse_xml(filename, platform=None, port_config_file=None, asic_name=None, hw
 
     results['MGMT_VRF_CONFIG'] = mvrf
 
+    # Update SNMP_AGENT_ADDRESS_CONFIG with Management IP and Loopback IP
+    # if available.
+    if not is_multi_asic() and asic_name is None:
+        results['SNMP_AGENT_ADDRESS_CONFIG'] = {}
+        port = '161'
+        for mgmt_intf in mgmt_intf.keys():
+            snmp_key = mgmt_intf[1].split('/')[0] + '|' + port + '|'
+            results['SNMP_AGENT_ADDRESS_CONFIG'][snmp_key] = {}
+        # Add Loopback IP as agent address for single asic
+        for loip in lo_intfs.keys():
+            snmp_key = loip[1].split('/')[0] + '|' + port + '|'
+            results['SNMP_AGENT_ADDRESS_CONFIG'][snmp_key] = {}
+    else:
+        results['SNMP_AGENT_ADDRESS_CONFIG'] = {}
+
     phyport_intfs = {}
     vlan_intfs = {}
     pc_intfs = {}
@@ -1729,6 +1756,9 @@ def parse_xml(filename, platform=None, port_config_file=None, asic_name=None, hw
         if intf[0][0:4] == 'Vlan':
             vlan_intfs[intf] = {}
 
+            if "secondary" in intfs[intf]:
+                vlan_intfs[intf]["secondary"] = "true"
+
             if bool(results['PEER_SWITCH']):
                 vlan_intfs[intf[0]] = {
                     'proxy_arp': 'enabled',
@@ -1738,6 +1768,9 @@ def parse_xml(filename, platform=None, port_config_file=None, asic_name=None, hw
                 vlan_intfs[intf[0]] = {}
         elif intf[0] in vlan_invert_mapping:
             vlan_intfs[(vlan_invert_mapping[intf[0]], intf[1])] = {}
+
+            if "secondary" in intfs[intf]:
+                vlan_intfs[(vlan_invert_mapping[intf[0]], intf[1])]["secondary"] = "true"
 
             if bool(results['PEER_SWITCH']):
                 vlan_intfs[vlan_invert_mapping[intf[0]]] = {
@@ -2046,7 +2079,7 @@ def parse_xml(filename, platform=None, port_config_file=None, asic_name=None, hw
     results['ACL_TABLE'] = filter_acl_table_bindings(acls, neighbors, pcs, pc_members, sub_role, current_device['type'] if current_device else None, is_storage_device, vlan_members)
     results['FEATURE'] = {
         'telemetry': {
-            'state': 'enabled'
+            'state': 'disabled'
         }
     }
     results['TELEMETRY'] = {
