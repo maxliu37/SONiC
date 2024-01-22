@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2019-2023 NVIDIA CORPORATION & AFFILIATES.
+# Copyright (c) 2019-2024 NVIDIA CORPORATION & AFFILIATES.
 # Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,11 +24,11 @@
 
 try:
     from sonic_platform_base.chassis_base import ChassisBase
-    from sonic_py_common.logger import Logger
     import os
     from functools import reduce
     from .utils import extract_RJ45_ports_index
     from . import utils
+    from .logger import logger
     from .device_data import DeviceDataManager
     import re
     import queue
@@ -70,8 +70,6 @@ REBOOT_TYPE_KEXEC_FILE = "/proc/cmdline"
 REBOOT_TYPE_KEXEC_PATTERN_WARM = ".*SONIC_BOOT_TYPE=(warm|fastfast).*"
 REBOOT_TYPE_KEXEC_PATTERN_FAST = ".*SONIC_BOOT_TYPE=(fast|fast-reboot).*"
 
-# Global logger class instance
-logger = Logger()
 
 class Chassis(ChassisBase):
     """Platform-specific Chassis class"""
@@ -423,11 +421,11 @@ class Chassis(ChassisBase):
         i = 0
         while True:
             try:
-                logger.log_info(f'get_change_event() trying to get changes from queue on iteration {i}')
+                logger.log_debug(f'get_change_event() trying to get changes from queue on iteration {i}')
                 port_dict = self.modules_changes_queue.get(timeout=timeout / 1000)
                 logger.log_info(f'get_change_event() iteration {i} port_dict: {port_dict}')
             except queue.Empty:
-                logger.log_info(f"failed to get item from modules changes queue on itertaion {i}")
+                logger.log_debug(f"change queue is empty in iteration {i}")
 
             if port_dict:
                 self.reinit_sfps(port_dict)
@@ -437,9 +435,9 @@ class Chassis(ChassisBase):
             else:
                 if not wait_for_ever:
                     elapse = time.time() - begin
-                    logger.log_info(f"get_change_event: wait_for_ever {wait_for_ever} elapse {elapse} iteartion {i}")
+                    logger.log_debug(f"get_change_event: wait_for_ever {wait_for_ever} elapse {elapse} iteration {i}")
                     if elapse * 1000 >= timeout:
-                        logger.log_info(f"elapse {elapse} > timeout {timeout} iteartion {i} returning empty dict")
+                        logger.log_debug(f"elapse {elapse} > timeout {timeout} iteration {i} returning empty dict")
                         return True, {'sfp': {}}
             i += 1
 

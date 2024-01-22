@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2019-2023 NVIDIA CORPORATION & AFFILIATES.
+# Copyright (c) 2019-2024 NVIDIA CORPORATION & AFFILIATES.
 # Apache-2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -26,17 +26,13 @@ try:
     import os
     import time
     from sonic_platform_base.psu_base import PsuBase
-    from sonic_py_common.logger import Logger
     from .device_data import DeviceDataManager
     from .led import PsuLed, SharedLed, ComponentFaultyIndicator
+    from .logger import logger
     from . import utils
     from .vpd_parser import VpdParser
 except ImportError as e:
     raise ImportError (str(e) + "- required module not found")
-
-
-# Global logger class instance
-logger = Logger()
 
 PSU_PATH = '/var/run/hw-management/'
 
