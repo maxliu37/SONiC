@@ -719,13 +719,15 @@ def test_check_unit_status():
 @patch('health_checker.sysmonitor.Sysmonitor.print_console_message', MagicMock())
 def test_system_status_up_after_service_removed():
     sysmon = Sysmonitor()
-    sysmon.publish_system_status('UP')
+    sysmon.monitor_timeout = MagicMock()
+    # sysmon.publish_system_status('UP')
 
+    # By default it is in init state. And should remain in init
     sysmon.check_unit_status('mock_bgp.service')
     assert 'mock_bgp.service' in sysmon.dnsrvs_name
-    result = swsscommon.SonicV2Connector.get(MockConnector, 0, "SYSTEM_READY|SYSTEM_STATE", 'Status')
+    result = swsscommon.SonicV2Connector.exists(MockConnector, 0, "SYSTEM_READY|SYSTEM_STATE")
     print("system status result before service was removed from system: {}".format(result))
-    assert result == "DOWN"
+    assert result == False
 
     sysmon.check_unit_status('mock_bgp.service')
     assert 'mock_bgp.service' not in sysmon.dnsrvs_name
@@ -737,6 +739,7 @@ def test_system_status_up_after_service_removed():
 @patch('health_checker.sysmonitor.Sysmonitor.get_all_service_list', MagicMock(return_value=['mock_snmp.service']))
 def test_check_unit_status_timer():
     sysmon = Sysmonitor()
+    sysmon.monitor_timeout = MagicMock()
     sysmon.state_db = MagicMock()
     sysmon.state_db.exists = MagicMock(return_value=1)
     sysmon.state_db.delete = MagicMock()
@@ -843,6 +846,7 @@ def test_post_system_status():
 @patch('health_checker.sysmonitor.Sysmonitor.post_system_status', MagicMock())
 def test_publish_system_status_allowed_status():
     sysmon = Sysmonitor()
+    sysmon.monitor_timeout = MagicMock()
     sysmon.publish_system_status('UP')
     sysmon.publish_system_status('DOWN')
     
@@ -853,7 +857,7 @@ def test_publish_system_status_allowed_status():
     for call_args in sysmon.post_system_status.call_args_list:
         assert call_args in expected_calls
 
-@patch('health_checker.sysmonitor.Sysmonitor.post_system_status', MagicMock())
+# @patch('health_checker.sysmonitor.Sysmonitor.post_system_status', MagicMock())
 @patch('health_checker.sysmonitor.Sysmonitor.print_console_message',
        MagicMock())
 def test_publish_system_status():
