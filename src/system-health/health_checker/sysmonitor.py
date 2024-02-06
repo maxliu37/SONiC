@@ -18,7 +18,7 @@ import signal
 
 SYSLOG_IDENTIFIER = "system#monitor"
 REDIS_TIMEOUT_MS = 0
-spl_srv_list = ['database-chassis', 'gbsyncd']
+spl_srv_list = ['database-chassis', 'gbsyncd', 'e2scrub_reap']
 SELECT_TIMEOUT_MSECS = 1000
 QUEUE_TIMEOUT = 15
 TASK_STOP_TIMEOUT = 10
@@ -222,9 +222,6 @@ class Sysmonitor(ProcessTaskBase):
         targets= [
             "/etc/systemd/system/multi-user.target.wants",
             "/etc/systemd/system/sonic.target.wants",
-            "/run/systemd/generator/multi-user.target.wants",
-            "/run/systemd/generator/sonic.target.wants",
-            "/etc/systemd/system/sym-mgr.target.requires",
         ]
         for path in targets:
             srvs_files_list = glob.glob('{}/*.service'.format(path))
@@ -284,13 +281,10 @@ class Sysmonitor(ProcessTaskBase):
         feature_state = device_metadata.get('sysready_state', 'enabled')
 
         # Handle feature state.
-        # portsyncmgrd gets status from all swss-ibv0@* containers, so use it
-        # if it present. Otherwise, use swss.service or swss-ibv0.service
+        # Use only swss.service to rely on ready state
         if feature_state == 'disabled':
             # Order matters
-            desired_srvs = ['portsyncmgrd.service',
-                            'swss-ibv0.service',
-                            'swss.service']
+            desired_srvs = ['swss.service']
             for srv in desired_srvs:
                 if srv in dir_set:
                     dir_set = {srv}
@@ -637,9 +631,7 @@ class Sysmonitor(ProcessTaskBase):
 
             if len(self.dnsrvs_name) == 0:
                 astate = "UP"
-            else:
-                astate = "DOWN"
-            self.publish_system_status(astate)
+                self.publish_system_status(astate)
 
             srv_name,last = event.split('.')
             # stop on service maybe propagated to timers and in that case,
