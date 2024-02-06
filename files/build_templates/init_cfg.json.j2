@@ -79,7 +79,7 @@
             "auto_restart": "{{autorestart}}",
             "support_syslog_rate_limit" : "true",
 {# Set check_up_status to true here when app readiness will be marked in state db  #}
-{%- if feature in ["swss-ibv0", "syncd-ibv0", "pmon"] %}
+{%- if feature in ["swss", "syncd", "pmon"] %}
             "check_up_status" : "true",
 {%- endif %}
 {# For now, to support the infrastrucure, setting the check_up_status to false for bgp,swss,pmon  #}
