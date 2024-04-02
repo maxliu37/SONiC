@@ -32,6 +32,19 @@
 /*
  * 'id <1-65535>' command
  */
+
+#define SIZE 30
+
+int f(char * s) {
+    char buf[20]; //buf not set to use SIZE macro
+
+    strncpy(buf, s, SIZE); //wrong: copy may exceed size of buf
+
+    for (int i = 0; i < SIZE; i++) { //wrong: upper limit that is higher than array size
+        cout << array[i];
+    }
+}
+
 int set_mc_lag_id( struct CSM *csm, uint16_t id)
 {
     if (!csm)
