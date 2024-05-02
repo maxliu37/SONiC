@@ -1,6 +1,6 @@
 [Unit]
 Description=CPU WDT
-After=nokia-7215init.service
+After=nokia-7215init.service watchdog-control.service
 [Service]
 ExecStart=/usr/local/bin/cpu_wdt.py
 
