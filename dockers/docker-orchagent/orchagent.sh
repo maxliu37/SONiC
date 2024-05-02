@@ -88,6 +88,9 @@ if [[ x"${LOCALHOST_SUBTYPE}" == x"SmartSwitch" ]]; then
     else
         ORCHAGENT_ARGS+=" -q tcp://127.0.0.1:8100"
     fi
+# Enable ZMQ for DPU Appliance
+elif [[ x"${LOCALHOST_SUBTYPE}" == x"Appliance" ]]; then
+    ORCHAGENT_ARGS+=" -q tcp://127.0.0.1:8100"
 fi
 
 exec /usr/bin/orchagent ${ORCHAGENT_ARGS}

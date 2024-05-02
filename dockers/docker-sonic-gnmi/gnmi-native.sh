@@ -70,9 +70,9 @@ else
     TELEMETRY_ARGS+=" -v=2"
 fi
 
-# Enable ZMQ for SmartSwitch
+# Enable ZMQ for SmartSwitch or DPU Appliance
 LOCALHOST_SUBTYPE=`sonic-db-cli CONFIG_DB hget "DEVICE_METADATA|localhost" "subtype"`
-if [[ x"${LOCALHOST_SUBTYPE}" == x"SmartSwitch" ]]; then
+if [[ x"${LOCALHOST_SUBTYPE}" == x"SmartSwitch" || x"${LOCALHOST_SUBTYPE}" == x"Appliance" ]]; then
     TELEMETRY_ARGS+=" -zmq_port=8100"
 fi
 
